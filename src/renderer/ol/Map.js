@@ -3,7 +3,6 @@ import Collection from './Collection.js';
 import CollectionEventType from './CollectionEventType.js';
 import CompositeMapRenderer from './renderer/Composite.js';
 import EventType from './events/EventType.js';
-import Layer from './layer/Layer.js';
 import LayerGroup, {GroupEvent} from './layer/Group.js';
 import MapBrowserEvent from './MapBrowserEvent.js';
 import MapBrowserEventHandler from './MapBrowserEventHandler.js';
@@ -37,31 +36,22 @@ import {fromUserCoordinate, toUserCoordinate} from './proj.js';
 import {getUid} from './util.js';
 import {hasArea} from './size.js';
 import {listen, unlistenByKey} from './events.js';
+
 import createOptionsInternal from './Map-createOptionsInternal.js';
+import removeLayerMapProperty from './Map-removeLayerMapProperty.js';
+import setLayerMapProperty from './Map-setLayerMapProperty.js';
 
-function removeLayerMapProperty(layer) {
-  if (layer instanceof Layer) {
-    layer.setMapInternal(null);
-    return;
-  }
-  if (layer instanceof LayerGroup) {
-    layer.getLayers().forEach(removeLayerMapProperty);
-  }
-}
-
-function setLayerMapProperty(layer, map) {
-  if (layer instanceof Layer) {
-    layer.setMapInternal(map);
-    return;
-  }
-  if (layer instanceof LayerGroup) {
-    const layers = layer.getLayers().getArray();
-    for (let i = 0, ii = layers.length; i < ii; ++i) {
-      setLayerMapProperty(layers[i], map);
-    }
-  }
-}
-
+/**
+ * Manage:
+ * - interactions [ol/interaction/Interaction~Interaction]
+ * - overlays [ol/Overlay~Overlay]
+ * - controls [ol/control/Control~Control]
+ * - view [ol/View~View]
+ * - layers [ol/layer/Base~BaseLayer]
+ *
+ * - rendering
+ * - events
+ */
 class Map extends BaseObject {
 
   constructor(options) {
@@ -122,6 +112,7 @@ class Map extends BaseObject {
     this.overlayContainerStopEvent_.style.pointerEvents = 'none';
     this.overlayContainerStopEvent_.className = 'ol-overlaycontainer-stopevent';
     this.viewport_.appendChild(this.overlayContainerStopEvent_);
+
     this.mapBrowserEventHandler_ = null;
     this.moveTolerance_ = options.moveTolerance;
     this.keyboardEventTarget_ = optionsInternal.keyboardEventTarget;
