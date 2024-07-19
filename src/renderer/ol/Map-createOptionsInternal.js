@@ -31,19 +31,6 @@ function createOptionsInternal(options) {
   values[MapProperty.TARGET] = options.target;
   values[MapProperty.VIEW] = options.view instanceof View ? options.view : new View();
 
-  let controls;
-  if (options.controls !== undefined) {
-    if (Array.isArray(options.controls)) {
-      controls = new Collection(options.controls.slice());
-    } else {
-      assert(
-        typeof ( (options.controls).getArray) === 'function',
-        'Expected `controls` to be an array or an `ol/Collection.js`',
-      );
-      controls = options.controls;
-    }
-  }
-
   let interactions;
   if (options.interactions !== undefined) {
     if (Array.isArray(options.interactions)) {
@@ -59,10 +46,9 @@ function createOptionsInternal(options) {
   }
 
   return {
-    controls: controls,
-    interactions: interactions,
-    keyboardEventTarget: keyboardEventTarget,
-    values: values,
+    interactions,
+    keyboardEventTarget,
+    values,
   };
 }
 

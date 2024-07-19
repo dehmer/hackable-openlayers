@@ -29,7 +29,6 @@ import {
   getForViewAndSize,
   isEmpty,
 } from './extent.js';
-import {defaults as defaultControls} from './control/defaults.js';
 import {defaults as defaultInteractions} from './interaction/defaults.js';
 import {equals} from './array.js';
 import {fromUserCoordinate, toUserCoordinate} from './proj.js';
@@ -45,7 +44,7 @@ import setLayerMapProperty from './Map-setLayerMapProperty.js';
  * Manage:
  * - interactions [ol/interaction/Interaction~Interaction]
  * - overlays [ol/Overlay~Overlay] -> no more
- * - controls [ol/control/Control~Control]
+ * - controls [ol/control/Control~Control] -> no more
  * - view [ol/View~View]
  * - layers [ol/layer/Base~BaseLayer]
  *
@@ -101,7 +100,6 @@ class Map extends BaseObject {
     this.targetChangeHandlerKeys_ = null;
     this.targetElement_ = null;
     this.resizeObserver_ = new ResizeObserver(() => this.updateSize());
-    this.controls = optionsInternal.controls || defaultControls();
 
     this.interactions =
       optionsInternal.interactions ||
@@ -134,22 +132,6 @@ class Map extends BaseObject {
       });
     }
 
-    this.controls.addEventListener(
-      CollectionEventType.ADD,
-
-      (event) => {
-        event.element.setMap(this);
-      },
-    );
-
-    this.controls.addEventListener(
-      CollectionEventType.REMOVE,
-
-      (event) => {
-        event.element.setMap(null);
-      },
-    );
-
     this.interactions.addEventListener(
       CollectionEventType.ADD,
 
@@ -163,13 +145,6 @@ class Map extends BaseObject {
 
       (event) => {
         event.element.setMap(null);
-      },
-    );
-
-    this.controls.forEach(
-
-      (control) => {
-        control.setMap(this);
       },
     );
 
@@ -179,10 +154,6 @@ class Map extends BaseObject {
         interaction.setMap(this);
       },
     );
-  }
-
-  addControl(control) {
-    this.getControls().push(control);
   }
 
   addInteraction(interaction) {
@@ -199,7 +170,6 @@ class Map extends BaseObject {
   }
 
   disposeInternal() {
-    this.controls.clear();
     this.interactions.clear();
     this.resizeObserver_.disconnect();
     this.setTarget(null);
@@ -326,10 +296,6 @@ class Map extends BaseObject {
       return null;
     }
     return applyTransform(frameState.pixelToCoordinateTransform, pixel.slice());
-  }
-
-  getControls() {
-    return this.controls;
   }
 
   getInteractions() {
@@ -723,10 +689,6 @@ class Map extends BaseObject {
     if (this.renderer_ && this.animationDelayKey_ === undefined) {
       this.animationDelayKey_ = requestAnimationFrame(this.animationDelay_);
     }
-  }
-
-  removeControl(control) {
-    return this.getControls().remove(control);
   }
 
   removeInteraction(interaction) {
