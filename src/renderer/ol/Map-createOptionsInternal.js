@@ -58,26 +58,10 @@ function createOptionsInternal(options) {
     }
   }
 
-  let overlays;
-  if (options.overlays !== undefined) {
-    if (Array.isArray(options.overlays)) {
-      overlays = new Collection(options.overlays.slice());
-    } else {
-      assert(
-        typeof ( (options.overlays).getArray) === 'function',
-        'Expected `overlays` to be an array or an `ol/Collection.js`',
-      );
-      overlays = options.overlays;
-    }
-  } else {
-    overlays = new Collection();
-  }
-
   return {
     controls: controls,
     interactions: interactions,
     keyboardEventTarget: keyboardEventTarget,
-    overlays: overlays,
     values: values,
   };
 }

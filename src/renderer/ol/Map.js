@@ -44,7 +44,7 @@ import setLayerMapProperty from './Map-setLayerMapProperty.js';
 /**
  * Manage:
  * - interactions [ol/interaction/Interaction~Interaction]
- * - overlays [ol/Overlay~Overlay]
+ * - overlays [ol/Overlay~Overlay] -> no more
  * - controls [ol/control/Control~Control]
  * - view [ol/View~View]
  * - layers [ol/layer/Base~BaseLayer]
@@ -95,24 +95,6 @@ class Map extends BaseObject {
     this.viewport_.style.width = '100%';
     this.viewport_.style.height = '100%';
 
-    this.overlayContainer_ = document.createElement('div');
-    this.overlayContainer_.style.position = 'absolute';
-    this.overlayContainer_.style.zIndex = '0';
-    this.overlayContainer_.style.width = '100%';
-    this.overlayContainer_.style.height = '100%';
-    this.overlayContainer_.style.pointerEvents = 'none';
-    this.overlayContainer_.className = 'ol-overlaycontainer';
-    this.viewport_.appendChild(this.overlayContainer_);
-
-    this.overlayContainerStopEvent_ = document.createElement('div');
-    this.overlayContainerStopEvent_.style.position = 'absolute';
-    this.overlayContainerStopEvent_.style.zIndex = '0';
-    this.overlayContainerStopEvent_.style.width = '100%';
-    this.overlayContainerStopEvent_.style.height = '100%';
-    this.overlayContainerStopEvent_.style.pointerEvents = 'none';
-    this.overlayContainerStopEvent_.className = 'ol-overlaycontainer-stopevent';
-    this.viewport_.appendChild(this.overlayContainerStopEvent_);
-
     this.mapBrowserEventHandler_ = null;
     this.moveTolerance_ = options.moveTolerance;
     this.keyboardEventTarget_ = optionsInternal.keyboardEventTarget;
@@ -127,8 +109,6 @@ class Map extends BaseObject {
         onFocusOnly: true,
       });
 
-    this.overlays_ = optionsInternal.overlays;
-    this.overlayIdIndex_ = {};
     this.renderer_ = null;
     this.postRenderFunctions_ = [];
 
@@ -186,26 +166,6 @@ class Map extends BaseObject {
       },
     );
 
-    this.overlays_.addEventListener(
-      CollectionEventType.ADD,
-
-      (event) => {
-        this.addOverlayInternal_(event.element);
-      },
-    );
-
-    this.overlays_.addEventListener(
-      CollectionEventType.REMOVE,
-
-      (event) => {
-        const id = event.element.getId();
-        if (id !== undefined) {
-          delete this.overlayIdIndex_[id.toString()];
-        }
-        event.element.setMap(null);
-      },
-    );
-
     this.controls.forEach(
 
       (control) => {
@@ -219,8 +179,6 @@ class Map extends BaseObject {
         interaction.setMap(this);
       },
     );
-
-    this.overlays_.forEach(this.addOverlayInternal_.bind(this));
   }
 
   addControl(control) {
@@ -240,22 +198,9 @@ class Map extends BaseObject {
     setLayerMapProperty(event.layer, this);
   }
 
-  addOverlay(overlay) {
-    this.getOverlays().push(overlay);
-  }
-
-  addOverlayInternal_(overlay) {
-    const id = overlay.getId();
-    if (id !== undefined) {
-      this.overlayIdIndex_[id.toString()] = overlay;
-    }
-    overlay.setMap(this);
-  }
-
   disposeInternal() {
     this.controls.clear();
     this.interactions.clear();
-    this.overlays_.clear();
     this.resizeObserver_.disconnect();
     this.setTarget(null);
     super.disposeInternal();
@@ -387,15 +332,6 @@ class Map extends BaseObject {
     return this.controls;
   }
 
-  getOverlays() {
-    return this.overlays_;
-  }
-
-  getOverlayById(id) {
-    const overlay = this.overlayIdIndex_[id.toString()];
-    return overlay !== undefined ? overlay : null;
-  }
-
   getInteractions() {
     return this.interactions;
   }
@@ -477,14 +413,6 @@ class Map extends BaseObject {
     return this.viewport_;
   }
 
-  getOverlayContainer() {
-    return this.overlayContainer_;
-  }
-
-  getOverlayContainerStopEvent() {
-    return this.overlayContainerStopEvent_;
-  }
-
   getOwnerDocument() {
     const targetElement = this.getTargetElement();
     return targetElement ? targetElement.ownerDocument : document;
@@ -526,9 +454,6 @@ class Map extends BaseObject {
         : doc;
       const target =  (originalEvent.target);
       if (
-
-        this.overlayContainerStopEvent_.contains(target) ||
-
         !(rootNode === doc ? doc.documentElement : rootNode).contains(target)
       ) {
         return;
@@ -815,10 +740,6 @@ class Map extends BaseObject {
 
   handleLayerRemove_(event) {
     removeLayerMapProperty(event.layer);
-  }
-
-  removeOverlay(overlay) {
-    return this.getOverlays().remove(overlay);
   }
 
   renderFrame_(time) {
